@@ -72,8 +72,8 @@ describe 'package-replace::default' do
           from: 'replace_packages',
           to: 'replace_package_target',
           notify: {
-            "service[php-fpm]" => "restart",
-            "service[apache2]" => "reload"
+            'service[php-fpm]' => 'restart',
+            'service[apache2]' => 'reload'
           }
         }
         node.set['php']['replace_packages'] = replace_packages
@@ -87,7 +87,7 @@ describe 'package-replace::default' do
     end
 
     it 'will not replace the packages that are not installed with the target package' do
-      replace_packages.reject{ |pkg| pkg == installed_package }.each do |pkg|
+      replace_packages.reject { |pkg| pkg == installed_package }.each do |pkg|
         expect(chef_run).to_not run_execute("yum -y replace #{pkg} --replace-with php56w-common")
       end
     end
@@ -134,8 +134,8 @@ describe 'package-replace::default' do
           from: 'replace_packages',
           to: 'replace_package_target',
           notify: {
-            "service[php-fpm]" => "restart",
-            "service[apache2]" => "reload"
+            'service[php-fpm]' => 'restart',
+            'service[apache2]' => 'reload'
           }
         }
         node.set['php']['replace_packages'] = replace_packages
@@ -185,7 +185,7 @@ describe 'package-replace::default' do
             'service[test]' => 'reload'
           }
         }
-        node.set['test']['replace_packages'] = ['test', 'test2']
+        node.set['test']['replace_packages'] = %w(test test2)
         node.set['test']['replace_package_target'] = 'test3'
       end.converge(described_recipe)
     end

@@ -34,7 +34,7 @@ end
 replacements.each do |type, replacement|
   # Define services to avoid errors upon notification
   if replacement['notify']
-    replacement['notify'].select{ |target, _action| target.match(/^service\[/) }.each_pair do |target, _action|
+    replacement['notify'].select { |target, _action| target.match(/^service\[/) }.each_pair do |target, _action|
       service target.sub(/^service\[([^\]]+)\]$/, '\1') do
       end
     end
