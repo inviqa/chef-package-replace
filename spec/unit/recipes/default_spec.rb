@@ -44,7 +44,7 @@ describe 'package-replace::default' do
     end
   end
 
-  context 'on centos, with a php package replacement with a current version' do
+  context 'on centos, with a package replacement to replace the installed php' do
     let(:replace_packages) do
       [
         'php-common',
@@ -104,6 +104,66 @@ describe 'package-replace::default' do
     it 'will notify the apache service to restart after replacing the php package' do
       expect(chef_run.execute("yum -y replace #{installed_package} --replace-with php56w-common"))
         .to notify('service[apache2]').to :reload
+    end
+  end
+
+  context 'on centos, with no package replacement necessary for the installed php' do
+    let(:replace_packages) do
+      [
+        'php-common',
+        'php54-common',
+        'php54w-common',
+        'php54u-common',
+        'php55-common',
+        'php55w-common',
+        'php55u-common'
+      ]
+    end
+
+    before do
+      replace_packages.each do |pkg|
+        stub_command("rpm -q #{pkg}").and_return(false)
+      end
+    end
+
+    cached(:chef_run) do
+      ChefSpec::SoloRunner.new(platform: 'centos', version: '6.7') do |node|
+        node.set['package_replacements']['php'] = {
+          enabled: true,
+          from: 'replace_packages',
+          to: 'replace_package_target',
+          notify: {
+            "service[php-fpm]" => "restart",
+            "service[apache2]" => "reload"
+          }
+        }
+        node.set['php']['replace_packages'] = replace_packages
+        node.set['php']['replace_package_target'] = 'php56w-common'
+      end.converge(described_recipe)
+    end
+
+    it 'will not replace the packages that are not installed with the target package' do
+      replace_packages.each do |pkg|
+        expect(chef_run).to_not run_execute("yum -y replace #{pkg} --replace-with php56w-common")
+      end
+    end
+  end
+
+  context 'on centos, with a configured package replacement disabled' do
+    cached(:chef_run) do
+      ChefSpec::SoloRunner.new(platform: 'centos', version: '6.7') do |node|
+        node.set['package_replacements']['test'] = {
+          enabled: false,
+          from: 'replace_packages',
+          to: 'replace_package_target'
+        }
+        node.set['test']['replace_packages'] = ['test']
+        node.set['test']['replace_package_target'] = 'test2'
+      end.converge(described_recipe)
+    end
+
+    it 'will not attempt a package replacement when disabled' do
+      expect(chef_run.find_resource('execute', 'yum -y replace test --replace-with test2')).to be_nil
     end
   end
 end

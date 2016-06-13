@@ -21,10 +21,10 @@ We use the following testing tools on this project, which can be installed by ru
 These will all run when you perform `bundle exec rake test`, however if you wish to know how to run them individually,
 they are listed below.
 
-    RSpec/ChefSpec for spec style TDD: `bundle exec rspec`
-    Test Kitchen for TDD and testing out individual recipes on a test Virtual Machine: `bundle exec kitchen test`
-    Foodcritic to catch Chef specific style/correctness errors: `bundle exec foodcritic . -f any -C`
-    Rubocop to catch Ruby style "offenses": `bundle exec rubocop`
+1. RSpec/ChefSpec for spec style TDD: `bundle exec rspec`
+2. Test Kitchen for TDD and testing out individual recipes on a test Virtual Machine: `bundle exec kitchen test`
+3. Foodcritic to catch Chef specific style/correctness errors: `bundle exec foodcritic . -f any -C`
+4. Rubocop to catch Ruby style "offenses": `bundle exec rubocop`
 
 
 Supermarket share
