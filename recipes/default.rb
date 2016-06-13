@@ -42,8 +42,14 @@ replacements.each do |type, replacement|
 
   from_packages = node[type][replacement['from']]
   to_package = node[type][replacement['to']]
+
   from_packages.each do |package|
-    execute "yum -y replace #{package} --replace-with #{to_package}" do
+    execute "replace #{package} -> #{to_package}" do
+      if replacement['strategy'] == 'yum_shell'
+        command "echo -e \"remove #{package}\\ninstall #{to_package}\\nrun\\n\" | yum shell -y"
+      else
+        command "yum -y replace #{package} --replace-with #{to_package}"
+      end
       only_if "rpm -q #{package}"
       notifies :run, 'ruby_block[yum-cache-reload-after-replacement]', :immediately
       if replacement['notify']
