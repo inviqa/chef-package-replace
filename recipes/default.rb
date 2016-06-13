@@ -36,6 +36,7 @@ replacements.each do |type, replacement|
   if replacement['notify']
     replacement['notify'].select { |target, _action| target.match(/^service\[/) }.each_pair do |target, _action|
       service target.sub(/^service\[([^\]]+)\]$/, '\1') do
+        supports reload: true, restart: true, status: true
       end
     end
   end

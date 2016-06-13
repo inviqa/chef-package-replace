@@ -11,10 +11,71 @@ provisioner:
 #   name: inspec
 
 platforms:
+  - name: centos-6.7
+    attributes:
+      package_replace_test:
+        remove_packages:
+          - "mysql56w-libs"
+          - "mysql56w-server"
+          - "php56w-common"
+          - "php56w-fpm"
+        install_packages:
+          - "mysql-libs"
+          - "mysql-server"
+          - "php-common"
+          - "php-fpm"
+        start_services:
+          - "mysqld"
+          - "php-fpm"
+      package_replacements:
+        mysql:
+          enabled: true
   - name: centos-7.1
+    attributes:
+      package_replace_test:
+        remove_packages:
+          - "php56w-common"
+          - "php56w-fpm"
+        install_packages:
+          - "php-common"
+          - "php-fpm"
+        start_services:
+          - "php-fpm"
+      package_replacements:
+        mysql:
+          enabled: false
 
 suites:
   - name: default
     run_list:
+      - recipe[package_replace_test::default]
+      - recipe[yum-webtatic]
       - recipe[package-replace::default]
     attributes:
+      php:
+        replace_packages:
+          - "php-common"
+          - "php54-common"
+          - "php54w-common"
+          - "php54u-common"
+          - "php55-common"
+          - "php55w-common"
+          - "php55u-common"
+        replace_package_target: "php56w-common"
+      mysql:
+        replace_libs_packages:
+          - "mysql-libs"
+        replacement_libs_package: "mysql56w-libs"
+      package_replacements:
+        php:
+          enabled: true
+          from: "replace_packages"
+          to: "replace_package_target"
+          notify:
+            "service[php-fpm]": "restart"
+        mysql:
+          strategy: "yum_shell"
+          from: "replace_libs_packages"
+          to: "replacement_libs_package"
+          notify:
+            "service[mysqld]": "restart"
