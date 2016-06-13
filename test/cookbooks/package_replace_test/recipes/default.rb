@@ -31,6 +31,18 @@ node['package_replace_test']['install_packages'].each do |pkg|
 end
 
 node['package_replace_test']['start_services'].each do |service_name|
+  directory '/etc/init.d' do
+    owner 'root'
+    group 'root'
+    mode '0755'
+    action :create
+  end
+
+  file "/etc/init.d/#{service_name}" do
+    content 'exit 0'
+    action :create
+  end
+
   service_resource = service service_name do
     supports reload: true, restart: true, status: true
     action :nothing
