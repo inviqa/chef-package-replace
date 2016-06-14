@@ -20,6 +20,7 @@ if defined?(ChefSpec)
   def install_package_replace_via_plugin(resource_name)
     ChefSpec::Matchers::ResourceMatcher.new(:package_replace_via_plugin, :install, resource_name)
   end
+
   def install_package_replace_via_shell(resource_name)
     ChefSpec::Matchers::ResourceMatcher.new(:package_replace_via_shell, :install, resource_name)
   end
