@@ -1,8 +1,178 @@
 package-replace Cookbook
 ==========================
 
-Replaces an older package with a newer package, where they would conflict if installed
-side by side.
+Replaces an older package with a newer package, where they would conflict if installed side by side.
+
+Some packages such as php55 do not upgrade cleanly to php56 versions of packages due to them
+not being marked as replacements in the package management system.
+
+How to use this cookbook
+------------------------
+
+There are two methods of using this cookbook:
+
+1. The `package_replace_replacement` LWRP can be used from your own cookbooks.
+2. Provide the correct configuration to the `default` recipe.
+
+Either approach can make use of two methods:
+
+1. Use of yum-plugin-replace to replace a package where they both share the same base name - strategy `yum_replace`.
+2. Use of yum shell to replace a package with another in the same yum transaction - strategy `yum_shell`.
+
+### Replacing a package with yum-plugin-replace
+
+Let's try to replace the current version of php that is installed with PHP 5.6 from Webtatic (where yum-webtatic is in the runlist already):
+
+#### Using the LWRP
+
+```ruby
+package_replace_replacement 'php' do
+  from_packages [
+    'php-common',
+    'php54-common',
+    'php54u-common',
+    'php54w-common',
+    'php55-common',
+    'php55u-common',
+    'php55w-common'
+  ]
+  to_package 'php56w-common'
+  strategy 'yum_replace'
+  notifications {
+    'service[php-fpm]' => 'restart'
+  }
+  action :install
+end
+```
+
+#### Using the default recipe
+
+Provide the following configuration and use `package-replace::default`:
+
+```json
+{
+  "php": {
+    "replace_packages": [
+      "php-common",
+      "php54-common",
+      "php54w-common",
+      "php54u-common",
+      "php55-common",
+      "php55w-common",
+      "php55u-common"
+    ],
+    "replace_package_target": "php56w-common"
+  },
+  "package_replacements": {
+    "php": {
+      "enabled": true,
+      "from": "replace_packages",
+      "strategy": "yum_replace",
+      "notifications": {
+        "service[php-fpm]": "restart"
+      },
+      "to": "replace_package_target"
+    }
+  }
+}
+```
+
+### Replacing a package with yum shell
+
+Let's try to replace the current version of mysql-libs that is installed with MySQL 5.5 from Webtatic (where yum-webtatic is in the runlist already):
+
+#### Using the LWRP
+
+```ruby
+package_replace_replacement 'mysql-libs' do
+  from_packages [
+    'mysql-libs'
+  ]
+  to_package 'mysql55w-libs'
+  strategy 'yum_shell'
+  notifications {
+    'service[mysqld]' => 'restart'
+  }
+  action :install
+end
+```
+
+#### Using the default recipe
+
+Provide the following configuration and use `package-replace::default`:
+
+```json
+{
+  "mysql-libs": {
+    "replace_packages": [
+      "mysql-libs",
+      "mysql55-libs",
+      "mysql55w-libs"
+    ],
+    "replace_package_target": "mysql55w-libs"
+  },
+  "package_replacements": {
+    "mysql-libs": {
+      "enabled": true,
+      "strategy": "yum_shell",
+      "from": "replace_packages",
+      "to": "replace_package_target",   
+      "notifications": {
+        "service[mysqld]": "restart"
+      }
+    }
+  }
+}
+```
+
+### LWRPs
+
+#### package_replace_replacement
+
+Attributes:
+<table>
+  <thead>
+    <tr>
+      <th>Attribute</th>
+      <th>Description</th>
+      <th>Example</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>type</td>
+      <td>Name of the replacement operation</td>
+      <td><tt>php</tt></td>
+      <td><tt></tt></td>
+    </tr>
+    <tr>
+      <td>from_packages</td>
+      <td>Array of package names to replace if present</td>
+      <td><tt>['test', 'test2']</tt></td>
+      <td><tt>[]</tt></td>
+    </tr>
+    <tr>
+      <td>to_package</td>
+      <td>The single package name to replace a matched package with</td>
+      <td><tt>test3</tt></td>
+      <td><tt></tt></td>
+    </tr>
+    <tr>
+      <td>strategy</td>
+      <td>Which strategy to use to replace the package, yum shell or yum plugin replace</td>
+      <td><tt>yum_shell</tt> or <tt>yum_replace</tt></td>
+      <td><tt>yum_replace</tt></td>
+    </tr>
+    <tr>
+      <td>notifications</td>
+      <td>Hash of chef resource IDs to action to take. Multiple entries allowed</td>
+      <td><tt>{"service[test]": "restart"}</tt></td>
+      <td><tt>{}</tt></td>
+    </tr>
+  </tbody>
+</table>
 
 Contributing
 ------------
