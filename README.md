@@ -119,7 +119,10 @@ package_replace_replacement 'mysql-libs' do
   from_packages [
     'mysql-libs'
   ]
-  to_package 'mysql55w-libs'
+  to_package [
+    'mysql55w-libs',
+    'libmysqlclient16'
+  ]
   strategy 'yum_shell'
   notifications {
     'service[mysqld]' => 'restart'
@@ -136,18 +139,19 @@ Provide the following configuration and use `package-replace::default`:
 {
   "mysql-libs": {
     "replace_packages": [
-      "mysql-libs",
-      "mysql55-libs",
-      "mysql55w-libs"
+      "mysql-libs"
     ],
-    "replace_package_target": "mysql55w-libs"
+    "replace_package_targets": [
+      "mysql55w-libs",
+      "libmysqlclient16"
+    ]
   },
   "package_replacements": {
     "mysql-libs": {
       "enabled": true,
       "strategy": "yum_shell",
       "from": "replace_packages",
-      "to": "replace_package_target",   
+      "to": "replace_package_targets",
       "notifications": {
         "service[mysqld]": "restart"
       }

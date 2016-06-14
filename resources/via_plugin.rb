@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: package-replace
-# Resource:: replacement
+# Resource:: via_plugin
 #
 # Copyright 2016 Inviqa UK LTD
 #
@@ -16,13 +16,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-resource_name :package_replace_replacement
-provides :package_replace_replacement
+resource_name :package_replace_via_plugin
+provides :package_replace_via_plugin
 
 property :type, String, name_property: true
 property :from_packages, Array, default: []
 property :to_package, String, default: ''
-property :strategy, String, default: 'yum_replace'
 property :notifications, Hash, default: {}
 
 actions [:install]

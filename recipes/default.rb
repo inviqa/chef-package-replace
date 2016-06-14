@@ -21,11 +21,19 @@ replacements = node['package_replacements'].to_hash.keep_if do |_type, replaceme
 end
 
 replacements.each do |type, replacement|
-  package_replace_replacement type do
-    from_packages node[type][replacement['from']]
-    to_package node[type][replacement['to']]
-    strategy replacement['strategy']
-    notifications replacement['notify']
-    action :install
+  if replacement['strategy'] == 'yum_shell'
+    package_replace_via_shell type do
+      from_packages node[type][replacement['from']]
+      to_packages node[type][replacement['to']]
+      notifications replacement['notify']
+      action :install
+    end
+  else
+    package_replace_via_plugin type do
+      from_packages node[type][replacement['from']]
+      to_package node[type][replacement['to']]
+      notifications replacement['notify']
+      action :install
+    end
   end
 end

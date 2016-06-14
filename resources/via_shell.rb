@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: package-replace
-# Library:: matchers
+# Resource:: via_shell
 #
 # Copyright 2016 Inviqa UK LTD
 #
@@ -16,11 +16,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-if defined?(ChefSpec)
-  def install_package_replace_via_plugin(resource_name)
-    ChefSpec::Matchers::ResourceMatcher.new(:package_replace_via_plugin, :install, resource_name)
-  end
-  def install_package_replace_via_shell(resource_name)
-    ChefSpec::Matchers::ResourceMatcher.new(:package_replace_via_shell, :install, resource_name)
-  end
-end
+resource_name :package_replace_via_shell
+provides :package_replace_via_shell
+
+property :type, String, name_property: true
+property :from_packages, Array, default: []
+property :to_packages, Array, default: []
+property :notifications, Hash, default: {}
+
+actions [:install]
+default_action :install

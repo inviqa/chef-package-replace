@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: package-replace
-# Provider:: replacement
+# Provider:: via_shell
 #
 # Copyright 2016 Inviqa UK LTD
 #
@@ -19,11 +19,6 @@
 use_inline_resources
 
 action :install do
-  package 'yum-plugin-replace' do
-    action :install
-    only_if { platform_family? 'rhel' }
-  end
-
   ruby_block "yum-cache-reload-after-replacement-#{new_resource.type}" do
     block { Chef::Provider::Package::Yum::YumCache.instance.reload }
     action :nothing
@@ -39,15 +34,12 @@ action :install do
     end
   end
 
-  to_package = new_resource.to_package
+  to_packages = new_resource.to_packages
+  to_packages_string = to_packages.join(' ')
 
   new_resource.from_packages.each do |package|
-    execute "replace #{package} -> #{to_package}" do
-      if new_resource.strategy == 'yum_shell'
-        command "echo -e \"remove #{package}\\ninstall #{to_package}\\nrun\\n\" | yum shell -y"
-      else
-        command "yum -y replace #{package} --replace-with #{to_package}"
-      end
+    execute "replace #{package} -> #{to_packages_string}" do
+      command "echo -e \"remove #{package}\\ninstall #{to_packages_string}\\nrun\\n\" | yum shell -y"
       only_if "rpm -q #{package}"
       notifies :run, "ruby_block[yum-cache-reload-after-replacement-#{new_resource.type}]", :immediately
       if new_resource.notifications

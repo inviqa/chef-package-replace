@@ -70,7 +70,9 @@ suites:
       mysql_libs:
         replace_libs_packages:
           - "mysql-libs"
-        replacement_libs_package: "mysql55w-libs"
+        replacement_libs_packages:
+          - "mysql55w-libs"
+          - "libmysqlclient16"
       mysql:
         replace_packages:
           - "mysql-server"
@@ -85,7 +87,7 @@ suites:
         mysql_libs:
           strategy: "yum_shell"
           from: "replace_libs_packages"
-          to: "replacement_libs_package"
+          to: "replacement_libs_packages"
           notify:
             "service[mysqld]": "restart"
         mysql:
