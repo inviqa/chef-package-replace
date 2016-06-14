@@ -19,20 +19,8 @@
 use_inline_resources
 
 action :install do
-  ruby_block "yum-cache-reload-after-replacement-#{new_resource.type}" do
-    block { Chef::Provider::Package::Yum::YumCache.instance.reload }
-    action :nothing
-    only_if { platform_family? 'rhel' }
-  end
-
-  # Define services to avoid errors upon notification
-  if new_resource.notifications
-    new_resource.notifications.select { |target, _action| target.match(/^service\[/) }.each_pair do |target, _action|
-      service target.sub(/^service\[([^\]]+)\]$/, '\1') do
-        supports reload: true, restart: true, status: true
-      end
-    end
-  end
+  package_replace_cache_reload(new_resource)
+  package_replace_service_definitions(new_resource)
 
   to_packages = new_resource.to_packages
   to_packages_string = to_packages.join(' ')
