@@ -15,8 +15,9 @@ platforms:
     attributes:
       package_replace_test:
         remove_packages:
-          - "mysql56w-libs"
-          - "mysql56w-server"
+          - "mysql55w-libs"
+          - "mysql55w-server"
+          - "libmysqlclient16"
           - "php56w-common"
           - "php56w-fpm"
         install_packages:
@@ -28,6 +29,8 @@ platforms:
           - "mysqld"
           - "php-fpm"
       package_replacements:
+        mysql_libs:
+          enabled: true
         mysql:
           enabled: true
   - name: centos-7.1
@@ -42,6 +45,8 @@ platforms:
         start_services:
           - "php-fpm"
       package_replacements:
+        mysql_libs:
+          enabled: false
         mysql:
           enabled: false
 
@@ -62,10 +67,14 @@ suites:
           - "php55w-common"
           - "php55u-common"
         replace_package_target: "php56w-common"
-      mysql:
+      mysql_libs:
         replace_libs_packages:
           - "mysql-libs"
-        replacement_libs_package: "mysql56w-libs"
+        replacement_libs_package: "mysql55w-libs"
+      mysql:
+        replace_packages:
+          - "mysql-server"
+        replacement_package: "mysql55w-server"
       package_replacements:
         php:
           enabled: true
@@ -73,9 +82,14 @@ suites:
           to: "replace_package_target"
           notify:
             "service[php-fpm]": "restart"
-        mysql:
+        mysql_libs:
           strategy: "yum_shell"
           from: "replace_libs_packages"
           to: "replacement_libs_package"
+          notify:
+            "service[mysqld]": "restart"
+        mysql:
+          from: "replace_packages"
+          to: "replacement_package"
           notify:
             "service[mysqld]": "restart"
