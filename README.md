@@ -49,6 +49,8 @@ Either approach can make use of two methods:
 
 1. Use of yum-plugin-replace to replace a package where they both share the same base name - strategy `yum_replace`.
 2. Use of yum shell to replace a package with another in the same yum transaction - strategy `yum_shell`.
+   Yum shell is less intelligent with regards to dependencies, so you will need to specify all replacement packages to
+   install.
 
 ### Replacing a package with yum-plugin-replace
 
