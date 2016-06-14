@@ -70,7 +70,6 @@ package_replace_via_plugin 'php' do
     'php55w-common'
   ]
   to_package 'php56w-common'
-  strategy 'yum_replace'
   notifications {
     'service[php-fpm]' => 'restart'
   }
@@ -125,7 +124,6 @@ package_replace_via_shell 'mysql-libs' do
     'mysql55w-libs',
     'libmysqlclient16'
   ]
-  strategy 'yum_shell'
   notifications {
     'service[mysqld]' => 'restart'
   }
