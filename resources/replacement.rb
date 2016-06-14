@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: package-replace
-# Recipe:: default
+# Resource:: replacement
 #
 # Copyright 2016 Inviqa UK LTD
 #
@@ -16,16 +16,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-replacements = node['package_replacements'].to_hash.keep_if do |_type, replacement|
-  replacement['enabled'] == true || replacement['enabled'] == 'true'
-end
+resource_name :package_replace_replacement
+provides :package_replace_replacement
 
-replacements.each do |type, replacement|
-  package_replace_replacement type do
-    from_packages node[type][replacement['from']]
-    to_package node[type][replacement['to']]
-    strategy replacement['strategy']
-    notifications replacement['notify']
-    action :install
-  end
-end
+property :type, String, name_property: true
+property :from_packages, Array, default: []
+property :to_package, String, default: ''
+property :strategy, String, default: 'yum_replace'
+property :notifications, Hash, default: {}
+
+actions [:install]
+default_action :install

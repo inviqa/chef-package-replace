@@ -30,20 +30,6 @@ describe 'package-replace::default' do
     end
   end
 
-  context 'on centos, with no replacements' do
-    cached(:chef_run) do
-      ChefSpec::SoloRunner.new(platform: 'centos', version: '6.7').converge(described_recipe)
-    end
-
-    it 'will install yum-plugin-replace' do
-      expect(chef_run).to install_package('yum-plugin-replace')
-    end
-
-    it 'will not execute the yum reload ruby block' do
-      expect(chef_run).to_not run_ruby_block('yum-cache-reload-after-replacement')
-    end
-  end
-
   context 'on centos, with a package replacement to replace the installed php' do
     let(:replace_packages) do
       [
@@ -66,7 +52,7 @@ describe 'package-replace::default' do
     end
 
     cached(:chef_run) do
-      ChefSpec::SoloRunner.new(platform: 'centos', version: '6.7') do |node|
+      ChefSpec::SoloRunner.new(platform: 'centos', version: '6.7', step_into: 'package_replace_replacement') do |node|
         node.set['package_replacements']['php'] = {
           enabled: true,
           from: 'replace_packages',
@@ -79,6 +65,26 @@ describe 'package-replace::default' do
         node.set['php']['replace_packages'] = replace_packages
         node.set['php']['replace_package_target'] = 'php56w-common'
       end.converge(described_recipe)
+    end
+
+    it 'will use the LWRP for replacing php' do
+      expect(chef_run).to install_package_replace_replacement('php')
+        .with(
+          from_packages: replace_packages,
+          to_package: 'php56w-common',
+          notifications: {
+            'service[php-fpm]' => 'restart',
+            'service[apache2]' => 'reload'
+          }
+        )
+    end
+
+    it 'will install yum-plugin-replace' do
+      expect(chef_run).to install_package('yum-plugin-replace')
+    end
+
+    it 'will not execute the yum reload ruby block' do
+      expect(chef_run).to_not run_ruby_block('yum-cache-reload-after-replacement-php')
     end
 
     it 'will replace the installed package with the target package' do
@@ -94,7 +100,7 @@ describe 'package-replace::default' do
 
     it 'will trigger a reload of the known installed packages cache' do
       expect(chef_run.execute("replace #{installed_package} -> php56w-common"))
-        .to notify('ruby_block[yum-cache-reload-after-replacement]').to(:run).immediately
+        .to notify('ruby_block[yum-cache-reload-after-replacement-php]').to(:run).immediately
     end
 
     it 'will notify the php-fpm service to restart after replacing the php package' do
@@ -128,7 +134,7 @@ describe 'package-replace::default' do
     end
 
     cached(:chef_run) do
-      ChefSpec::SoloRunner.new(platform: 'centos', version: '6.7') do |node|
+      ChefSpec::SoloRunner.new(platform: 'centos', version: '6.7', step_into: 'package_replace_replacement') do |node|
         node.set['package_replacements']['php'] = {
           enabled: true,
           from: 'replace_packages',
@@ -141,6 +147,26 @@ describe 'package-replace::default' do
         node.set['php']['replace_packages'] = replace_packages
         node.set['php']['replace_package_target'] = 'php56w-common'
       end.converge(described_recipe)
+    end
+
+    it 'will use the LWRP for replacing php' do
+      expect(chef_run).to install_package_replace_replacement('php')
+        .with(
+          from_packages: replace_packages,
+          to_package: 'php56w-common',
+          notifications: {
+            'service[php-fpm]' => 'restart',
+            'service[apache2]' => 'reload'
+          }
+        )
+    end
+
+    it 'will install yum-plugin-replace' do
+      expect(chef_run).to install_package('yum-plugin-replace')
+    end
+
+    it 'will not execute the yum reload ruby block' do
+      expect(chef_run).to_not run_ruby_block('yum-cache-reload-after-replacement-php')
     end
 
     it 'will not replace the packages that are not installed with the target package' do
@@ -163,6 +189,18 @@ describe 'package-replace::default' do
       end.converge(described_recipe)
     end
 
+    it 'will not use the LWRP for replacing the test package' do
+      expect(chef_run).to_not install_package_replace_replacement('test')
+    end
+
+    it 'will not install yum-plugin-replace' do
+      expect(chef_run).to_not install_package('yum-plugin-replace')
+    end
+
+    it 'will not execute the yum reload ruby block' do
+      expect(chef_run).to_not run_ruby_block('yum-cache-reload-after-replacement-test')
+    end
+
     it 'will not attempt a package replacement when disabled' do
       expect(chef_run.find_resource('execute', 'replace test -> test2')).to be_nil
     end
@@ -175,7 +213,7 @@ describe 'package-replace::default' do
     end
 
     cached(:chef_run) do
-      ChefSpec::SoloRunner.new(platform: 'centos', version: '6.7') do |node|
+      ChefSpec::SoloRunner.new(platform: 'centos', version: '6.7', step_into: 'package_replace_replacement') do |node|
         node.set['package_replacements']['test'] = {
           enabled: true,
           strategy: 'yum_shell',
@@ -190,6 +228,26 @@ describe 'package-replace::default' do
       end.converge(described_recipe)
     end
 
+    it 'will use the LWRP for replacing the test package' do
+      expect(chef_run).to install_package_replace_replacement('test')
+        .with(
+          from_packages: %w(test test2),
+          to_package: 'test3',
+          strategy: 'yum_shell',
+          notifications: {
+            'service[test]' => 'reload'
+          }
+        )
+    end
+
+    it 'will install yum-plugin-replace' do
+      expect(chef_run).to install_package('yum-plugin-replace')
+    end
+
+    it 'will not execute the yum reload ruby block' do
+      expect(chef_run).to_not run_ruby_block('yum-cache-reload-after-replacement-test')
+    end
+
     it 'will replace the installed package with the target package' do
       expect(chef_run).to run_execute('replace test -> test3')
         .with_command('echo -e "remove test\ninstall test3\nrun\n" | yum shell -y')
@@ -201,7 +259,7 @@ describe 'package-replace::default' do
 
     it 'will trigger a reload of the known installed packages cache' do
       expect(chef_run.execute('replace test -> test3'))
-        .to notify('ruby_block[yum-cache-reload-after-replacement]').to(:run).immediately
+        .to notify('ruby_block[yum-cache-reload-after-replacement-test]').to(:run).immediately
     end
 
     it 'will notify the test service to reload after replacing the test package' do

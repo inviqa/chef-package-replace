@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: package-replace
-# Recipe:: default
+# Library:: matchers
 #
 # Copyright 2016 Inviqa UK LTD
 #
@@ -16,16 +16,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-replacements = node['package_replacements'].to_hash.keep_if do |_type, replacement|
-  replacement['enabled'] == true || replacement['enabled'] == 'true'
-end
-
-replacements.each do |type, replacement|
-  package_replace_replacement type do
-    from_packages node[type][replacement['from']]
-    to_package node[type][replacement['to']]
-    strategy replacement['strategy']
-    notifications replacement['notify']
-    action :install
+if defined?(ChefSpec)
+  def install_package_replace_replacement(resource_name)
+    ChefSpec::Matchers::ResourceMatcher.new(:package_replace_replacement, :install, resource_name)
   end
 end
