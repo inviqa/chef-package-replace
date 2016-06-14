@@ -6,6 +6,37 @@ Replaces an older package with a newer package, where they would conflict if ins
 Some packages such as php55 do not upgrade cleanly to php56 versions of packages due to them
 not being marked as replacements in the package management system.
 
+Warnings - Before you use this cookbook
+---------------------------------------
+
+Thought should be given to what packages are going to be replaced and their replacement(s).
+
+For example, an upgrade of MySQL/MariaDB/Percona server packages could mean data loss. This is due to needing to run
+`mysql_upgrade` after the package has been replaced.
+
+So, take precautions and back up your data immediately prior to upgrading the packages!
+
+Better yet, start from a new server and import the data from a recent database dump, instead of risking an upgrade.
+
+If upgrading a "safer" set of packages, say "php55" to "php56", it's possible that the replacement
+will miss some packages that were previously installed but are not any longer.
+
+Ensure you test out an upgrade elsewhere, such as in test-kitchen or a pipeline server, before performing the upgrade on
+production.
+
+Do some checks before and after chef runs the upgrade, for instance:
+
+    rpm -qa | grep php | sort -n > before.txt
+    # run chef
+    rpm -qa | grep php | sort -n > after.txt
+    diff before.txt after.txt
+
+It's also possible that the act of replacing a package will disable any associated services, so the usage of this
+cookbook (whether by LWRP in your own cookbook, or the default recipe being included in the runlist) should be
+fairly high up the runlist order.
+Especially before say the usual recipe that installs these services/packages ("recipe[php]" or "recipe[mysql]",
+for example) as the recipes will ensure the right services get set to start at boot.
+
 How to use this cookbook
 ------------------------
 
