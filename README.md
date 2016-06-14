@@ -34,8 +34,8 @@ Do some checks before and after chef runs the upgrade, for instance:
 It's also possible that the act of replacing a package will disable any associated services, so the usage of this
 cookbook (whether by LWRP in your own cookbook, or the default recipe being included in the runlist) should be
 fairly high up the runlist order.
-Especially before say the usual recipe that installs these services/packages ("recipe[php]" or "recipe[mysql]",
-for example) as the recipes will ensure the right services get set to start at boot.
+Especially before the usual cookbook that installs these services/packages ("recipe[php]" or "recipe[mysql]",
+for example) as the cookbooks will ensure the right services get set to start at boot.
 
 How to use this cookbook
 ------------------------
