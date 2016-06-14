@@ -57,7 +57,7 @@ Let's try to replace the current version of php that is installed with PHP 5.6 f
 #### Using the LWRP
 
 ```ruby
-package_replace_replacement 'php' do
+package_replace_via_plugin 'php' do
   from_packages [
     'php-common',
     'php54-common',
@@ -115,11 +115,11 @@ Let's try to replace the current version of mysql-libs that is installed with My
 #### Using the LWRP
 
 ```ruby
-package_replace_replacement 'mysql-libs' do
+package_replace_via_shell 'mysql-libs' do
   from_packages [
     'mysql-libs'
   ]
-  to_package [
+  to_packages [
     'mysql55w-libs',
     'libmysqlclient16'
   ]
@@ -162,7 +162,7 @@ Provide the following configuration and use `package-replace::default`:
 
 ### LWRPs
 
-#### package_replace_replacement
+#### package_replace_via_plugin
 
 Attributes:
 <table>
@@ -195,10 +195,46 @@ Attributes:
       <td><tt></tt></td>
     </tr>
     <tr>
-      <td>strategy</td>
-      <td>Which strategy to use to replace the package, yum shell or yum plugin replace</td>
-      <td><tt>yum_shell</tt> or <tt>yum_replace</tt></td>
-      <td><tt>yum_replace</tt></td>
+      <td>notifications</td>
+      <td>Hash of chef resource IDs to action to take. Multiple entries allowed</td>
+      <td><tt>{"service[test]": "restart"}</tt></td>
+      <td><tt>{}</tt></td>
+    </tr>
+  </tbody>
+</table>
+
+
+#### package_replace_via_shell
+
+Attributes:
+<table>
+  <thead>
+    <tr>
+      <th>Attribute</th>
+      <th>Description</th>
+      <th>Example</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>type</td>
+      <td>Name of the replacement operation</td>
+      <td><tt>php</tt></td>
+      <td><tt></tt></td>
+    </tr>
+    <tr>
+      <td>from_packages</td>
+      <td>Array of package names to replace if present</td>
+      <td><tt>['test', 'test2']</tt></td>
+      <td><tt>[]</tt></td>
+    </tr>
+    <tr>
+      <td>to_packages</td>
+      <td>Potentially multiple package names to replace a matched package with</td>
+      <td><tt>['test3', 'test4']</tt></td>
+      <td><tt>[]</tt></td>
     </tr>
     <tr>
       <td>notifications</td>
