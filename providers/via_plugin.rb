@@ -19,6 +19,8 @@
 use_inline_resources
 
 action :install do
+  include_recipe 'yum-webtatic'
+
   package 'yum-plugin-replace' do
     action :install
     only_if { platform_family? 'rhel' }

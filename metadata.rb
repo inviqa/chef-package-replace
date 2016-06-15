@@ -9,3 +9,5 @@ version '0.1.0'
 
 issues_url 'https://github.com/inviqa/chef-package-replace/issues/'
 source_url 'https://github.com/inviqa/chef-package-replace/'
+
+depends 'yum-webtatic'

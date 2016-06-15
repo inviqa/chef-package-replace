@@ -79,6 +79,10 @@ describe 'package-replace::default' do
         )
     end
 
+    it 'will include yum-webtatic to provide yum-plugin-replace' do
+      expect(chef_run).to include_recipe('yum-webtatic')
+    end
+
     it 'will install yum-plugin-replace' do
       expect(chef_run).to install_package('yum-plugin-replace')
     end
