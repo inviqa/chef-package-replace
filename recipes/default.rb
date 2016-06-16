@@ -29,6 +29,8 @@ replacements.each do |type, replacement|
       action :install
     end
   else
+    include_recipe 'yum-webtatic'
+
     package_replace_via_plugin type do
       from_packages node[type][replacement['from']]
       to_package node[type][replacement['to']]
