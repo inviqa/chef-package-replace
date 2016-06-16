@@ -213,6 +213,7 @@ describe 'package-replace::default' do
   context 'on centos, with yum shell replacement strategy' do
     before do
       stub_command('rpm -q test').and_return(true)
+      stub_command('rpm -qa | egrep -i \'(test|test2)\'').and_return(true)
       stub_command('rpm -q test2').and_return(false)
     end
 
@@ -224,7 +225,8 @@ describe 'package-replace::default' do
           from: 'replace_packages',
           to: 'replace_package_targets',
           notify: {
-            'service[test]' => 'reload'
+            'service[test]' => 'reload',
+            'gem_package[test]' => 'reinstall'
           }
         }
         node.set['test']['replace_packages'] = %w(test test2)
@@ -238,7 +240,8 @@ describe 'package-replace::default' do
           from_packages: %w(test test2),
           to_packages: %w(test3 test4),
           notifications: {
-            'service[test]' => 'reload'
+            'service[test]' => 'reload',
+            'gem_package[test]' => 'reinstall'
           }
         )
     end
@@ -248,22 +251,28 @@ describe 'package-replace::default' do
     end
 
     it 'will replace the installed package with the target package' do
-      expect(chef_run).to run_execute('replace test -> test3 test4')
-        .with_command('echo -e "remove test\ninstall test3 test4\nrun\n" | yum shell -y')
-    end
-
-    it 'will not replace the packages that are not installed with the target package' do
-      expect(chef_run).to_not run_execute('replace test2 -> test3 test4')
+      expect(chef_run).to run_execute('replace test test2 -> test3 test4')
+        .with_command('echo -e "remove test test2\ninstall test3 test4\nrun\n" | yum shell -y')
     end
 
     it 'will trigger a reload of the known installed packages cache' do
-      expect(chef_run.execute('replace test -> test3 test4'))
+      expect(chef_run.execute('replace test test2 -> test3 test4'))
         .to notify('ruby_block[yum-cache-reload-after-replacement-test]').to(:run).immediately
     end
 
     it 'will notify the test service to reload after replacing the test package' do
-      expect(chef_run.execute('replace test -> test3 test4'))
-        .to notify('service[test]').to :reload
+      expect(chef_run.execute('replace test test2 -> test3 test4'))
+        .to notify('service[test]').to(:reload).immediately
+    end
+
+    it 'will notify the test gem package to uninstall' do
+      expect(chef_run.execute('replace test test2 -> test3 test4'))
+        .to notify('gem_package[test]').to(:remove).immediately
+    end
+
+    it 'will notify the test gem package to install' do
+      expect(chef_run.execute('replace test test2 -> test3 test4'))
+        .to notify('gem_package[test]').to(:install).immediately
     end
   end
 end

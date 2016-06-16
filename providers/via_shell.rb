@@ -20,19 +20,27 @@ use_inline_resources
 
 action :install do
   package_replace_cache_reload(new_resource)
+  package_replace_notification_definitions(new_resource)
   package_replace_service_definitions(new_resource)
+
+  from_packages = new_resource.from_packages
+  from_packages_string = from_packages.join(' ')
+  from_packages_regex = "(#{from_packages.join('|')})"
 
   to_packages = new_resource.to_packages
   to_packages_string = to_packages.join(' ')
 
-  new_resource.from_packages.each do |package|
-    execute "replace #{package} -> #{to_packages_string}" do
-      command "echo -e \"remove #{package}\\ninstall #{to_packages_string}\\nrun\\n\" | yum shell -y"
-      only_if "rpm -q #{package}"
-      notifies :run, "ruby_block[yum-cache-reload-after-replacement-#{new_resource.type}]", :immediately
-      if new_resource.notifications
-        new_resource.notifications.each_pair do |target, action|
-          notifies action, target
+  execute "replace #{from_packages_string} -> #{to_packages_string}" do
+    command "echo -e \"remove #{from_packages_string}\\ninstall #{to_packages_string}\\nrun\\n\" | yum shell -y"
+    only_if "rpm -qa | egrep -i '#{from_packages_regex}'"
+    notifies :run, "ruby_block[yum-cache-reload-after-replacement-#{new_resource.type}]", :immediately
+    if new_resource.notifications
+      new_resource.notifications.each_pair do |target, action|
+        if action == 'reinstall'
+          notifies :remove, target, :immediately
+          notifies :install, target, :immediately
+        else
+          notifies action, target, :immediately
         end
       end
     end

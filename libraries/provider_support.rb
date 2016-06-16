@@ -24,6 +24,17 @@ def package_replace_cache_reload(new_resource)
   end
 end
 
+def package_replace_notification_definitions(new_resource)
+  # Define notification targets to avoid errors upon notification
+  if new_resource.notifications
+    new_resource.notifications.reject { |target, _action| target.match(/^service\[/) }.each_pair do |target, _action|
+      type = target.sub(/^([^\[]+)\[.*/, '\1')
+      name = target.sub(/^.+\[(.+)\]$/, '\1')
+      self.send(type, name)
+    end
+  end
+end
+
 def package_replace_service_definitions(new_resource)
   # Define services to avoid errors upon notification
   if new_resource.notifications

@@ -27,6 +27,7 @@ action :install do
   end
 
   package_replace_cache_reload(new_resource)
+  package_replace_notification_definitions(new_resource)
   package_replace_service_definitions(new_resource)
 
   to_package = new_resource.to_package
@@ -38,7 +39,12 @@ action :install do
       notifies :run, "ruby_block[yum-cache-reload-after-replacement-#{new_resource.type}]", :immediately
       if new_resource.notifications
         new_resource.notifications.each_pair do |target, action|
-          notifies action, target
+          if action == 'reinstall'
+            notifies :remove, target, :immediately
+            notifies :install, target, :immediately
+          else
+            notifies action, target, :immediately
+          end
         end
       end
     end
