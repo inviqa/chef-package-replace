@@ -30,7 +30,7 @@ def package_replace_notification_definitions(new_resource)
     new_resource.notifications.reject { |target, _action| target.match(/^service\[/) }.each_pair do |target, _action|
       type = target.sub(/^([^\[]+)\[.*/, '\1')
       name = target.sub(/^.+\[(.+)\]$/, '\1')
-      self.send(type, name)
+      eval("#{type} '#{name}' do\naction :nothing\nend")
     end
   end
 end
