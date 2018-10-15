@@ -160,6 +160,109 @@ Provide the following configuration and use `package-replace::default`:
 }
 ```
 
+### Replacing a package with uninstall/install
+
+Let's try to replace the current version of php that is installed with PHP 5.6 from Webtatic (where yum-webtatic is in the runlist already):
+
+#### Using the LWRP
+
+```ruby
+package_replace_via_uninstall_install 'php' do
+  from_packages [
+    'php-common',
+    'php54-common',
+    'php54u-common',
+    'php54w-common',
+    'php55-common',
+    'php55u-common',
+    'php55w-common'
+  ]
+  to_packages [
+    'php56w',
+    'php56w-bcmath',
+    'php56w-cli',
+    'php56w-common',
+    'php56w-devel',
+    'php56w-fpm',
+    'php56w-gd',
+    'php56w-mbstring',
+    'php56w-mcrypt',
+    'php56w-mysqlnd',
+    'php56w-opcache',
+    'php56w-pdo',
+    'php56w-pear',
+    'php56w-pecl-apcu',
+    'php56w-pecl-igbinary',
+    'php56w-pecl-imagick',
+    'php56w-pecl-memcache',
+    'php56w-pecl-redis',
+    'php56w-process',
+    'php56w-soap',
+    'php56w-xml',
+    'php56w-xmlrpc'
+  ]
+  notifications {
+    'service[php-fpm]' => 'restart'
+  }
+  action :install
+end
+```
+
+#### Using the default recipe
+
+Provide the following configuration and use `package-replace::default`:
+
+```json
+{
+  "php": {
+    "replace_packages": [
+      "php-common",
+      "php54-common",
+      "php54w-common",
+      "php54u-common",
+      "php55-common",
+      "php55w-common",
+      "php55u-common"
+    ],
+    "replace_package_targets": [
+        "php56w",
+        "php56w-bcmath",
+        "php56w-cli",
+        "php56w-common",
+        "php56w-devel",
+        "php56w-fpm",
+        "php56w-gd",
+        "php56w-mbstring",
+        "php56w-mcrypt",
+        "php56w-mysqlnd",
+        "php56w-opcache",
+        "php56w-pdo",
+        "php56w-pear",
+        "php56w-pecl-apcu",
+        "php56w-pecl-igbinary",
+        "php56w-pecl-imagick",
+        "php56w-pecl-memcache",
+        "php56w-pecl-redis",
+        "php56w-process",
+        "php56w-soap",
+        "php56w-xml",
+        "php56w-xmlrpc"
+    ]
+  },
+  "package_replacements": {
+    "php": {
+      "enabled": true,
+      "from": "replace_packages",
+      "strategy": "uninstall_install",
+      "notifications": {
+        "service[php-fpm]": "restart"
+      },
+      "to": "replace_package_targets"
+    }
+  }
+}
+```
+
 ### LWRPs
 
 #### package_replace_via_plugin
@@ -205,6 +308,48 @@ Attributes:
 
 
 #### package_replace_via_shell
+
+Attributes:
+<table>
+  <thead>
+    <tr>
+      <th>Attribute</th>
+      <th>Description</th>
+      <th>Example</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>type</td>
+      <td>Name of the replacement operation</td>
+      <td><tt>php</tt></td>
+      <td><tt></tt></td>
+    </tr>
+    <tr>
+      <td>from_packages</td>
+      <td>Array of package names to replace if present</td>
+      <td><tt>['test', 'test2']</tt></td>
+      <td><tt>[]</tt></td>
+    </tr>
+    <tr>
+      <td>to_packages</td>
+      <td>Potentially multiple package names to replace a matched package with</td>
+      <td><tt>['test3', 'test4']</tt></td>
+      <td><tt>[]</tt></td>
+    </tr>
+    <tr>
+      <td>notifications</td>
+      <td>Hash of chef resource IDs to action to take. Multiple entries allowed</td>
+      <td><tt>{"service[test]": "restart"}</tt></td>
+      <td><tt>{}</tt></td>
+    </tr>
+  </tbody>
+</table>
+
+
+#### package_replace_via_uninstall_install
 
 Attributes:
 <table>
