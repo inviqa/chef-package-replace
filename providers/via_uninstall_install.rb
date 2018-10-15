@@ -30,7 +30,7 @@ action :install do
   to_packages_string = to_packages.join(' ')
 
   log "uninstall #{from_packages_string} -> install #{to_packages_string}" do
-    action :log
+    action :write
   end
 
   package from_packages do

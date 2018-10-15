@@ -1,3 +1,9 @@
+## 0.2.2 (15 October 2018)
+
+FEATURES
+
+  * Fix uninstall_install strategy in default recipe
+
 ## 0.2.1 (15 October 2018)
 
 FEATURES

@@ -28,7 +28,7 @@ replacements.each do |type, replacement|
       notifications replacement['notify']
       action :install
     end
-  elsif replacement['strategy'] == 'yum_shell'
+  elsif replacement['strategy'] == 'uninstall_install'
     package_replace_via_uninstall_install type do
       from_packages node[type][replacement['from']]
       to_packages node[type][replacement['to']]
